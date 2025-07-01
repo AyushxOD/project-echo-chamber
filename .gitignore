@@ -1,0 +1,14 @@
+# Python / Backend
+/venv/
+__pycache__/
+*.pyc
+
+# Node.js / Frontend
+/echo-chamber-frontend/node_modules/
+/echo-chamber-frontend/dist/
+.env
+npm-debug.log
+
+# IDE / OS files
+.DS_Store
+.vscode/
