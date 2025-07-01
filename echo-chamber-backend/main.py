@@ -6,6 +6,8 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from dotenv import load_dotenv
 import asyncio
 from fastapi.middleware.cors import CORSMiddleware
+import sqlite3 # Make sure this is at the top of your file
+
 
 # Load environment variables
 load_dotenv()
@@ -101,6 +103,29 @@ async def summarize(ticker: str):
     except Exception:
         traceback.print_exc()
         return {"summary": "Failed to generate summary due to an error."}
+    
+    
+@app.get("/history/{ticker}")
+async def get_history(ticker: str):
+    """
+    Retrieves the sentiment history for a given ticker from the database.
+    """
+    DB_NAME = "sentiment_history.db"
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row # This makes the output a dictionary
+    cursor = conn.cursor()
+
+    print(f"Fetching history for {ticker} from database...")
+    cursor.execute("""
+        SELECT record_date, sentiment_score FROM daily_sentiment
+        WHERE ticker = ? ORDER BY record_date ASC
+    """, (ticker,))
+
+    history_data = [dict(row) for row in cursor.fetchall()]
+    
+    conn.close()
+    return history_data
+
 
 @app.websocket("/ws/sentiment/{ticker}")
 async def websocket_endpoint(websocket: WebSocket, ticker: str):
